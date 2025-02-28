@@ -90,9 +90,10 @@ const HiveRisk = () => {
 
   return (
     <div className="hive-risk">
+      <img src="/logo.png" alt="Number Hive Logo" className="logo" />
       <h1>Hive Risk</h1>
       <div className="flag">
-        <p>Make the {isLargestMode ? 'largest' : 'smallest'} number you can!</p>
+        <p>Make the {isLargestMode ? 'largest' : 'smallest'} number you can by clicking on the box to place the generated number.</p>
       </div>
       <div className="number-display">
         <span className="animated-number">{displayNumber}</span>

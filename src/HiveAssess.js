@@ -12,9 +12,13 @@ const HiveAssess = () => {
   const [timeLeft, setTimeLeft] = useState(60);
   const [questionsLeft, setQuestionsLeft] = useState(25);
   const [feedback, setFeedback] = useState(null);
+  const [oldFactor, setOldFactor] = useState(null);
   const [showSetup, setShowSetup] = useState(true);
   const [selectedFactors, setSelectedFactors] = useState(Array(12).fill(true));
   const [isTimedMode, setIsTimedMode] = useState(true);
+  const [isPaused, setIsPaused] = useState(false);
+  const [highScore, setHighScore] = useState(() => localStorage.getItem('highScore') || 0);
+  const [disablePads, setDisablePads] = useState(false);
 
   const numbers = [
     [1, 2, 3, 4],
@@ -24,13 +28,13 @@ const HiveAssess = () => {
 
   useEffect(() => {
     let timer;
-    if (gameActive && isTimedMode && timeLeft > 0) {
+    if (gameActive && !isPaused && isTimedMode && timeLeft > 0) {
       timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
     } else if (isTimedMode && timeLeft === 0) {
       setGameActive(false);
     }
     return () => clearInterval(timer);
-  }, [gameActive, timeLeft, isTimedMode]);
+  }, [gameActive, timeLeft, isTimedMode, isPaused]);
 
   const startGame = () => {
     setShowSetup(false);
@@ -42,6 +46,7 @@ const HiveAssess = () => {
     setQuestionsLeft(25);
     setGameActive(true);
     setFeedback(null);
+    setIsPaused(false);
     generateValidProduct(1, 1);
   };
 
@@ -62,10 +67,24 @@ const HiveAssess = () => {
 
   const checkAnswer = (selectedFirst, selectedSecond) => {
     setAttempts((prev) => prev + 1);
-    if (selectedFirst * selectedSecond === product) {
-      setScore((prev) => prev + 1);
-      setFeedback('✔️');
-      generateValidProduct(selectedFirst, selectedSecond);
+    const isCorrect = selectedFirst * selectedSecond === product;
+    setFeedback(isCorrect ? 'correct' : 'incorrect');
+    setOldFactor(selectedFirst * selectedSecond);
+
+    if (isCorrect) {
+      setScore((prev) => {
+        const newScore = prev + 1;
+        if (newScore > highScore) {
+          setHighScore(newScore);
+          localStorage.setItem('highScore', newScore);
+        }
+        return newScore;
+      });
+      setTimeout(() => {
+        generateValidProduct(selectedFirst, selectedSecond);
+        setFeedback(null);
+        setOldFactor(null);
+      }, 200);
       if (!isTimedMode) {
         setQuestionsLeft((prev) => {
           const newCount = prev - 1;
@@ -74,10 +93,16 @@ const HiveAssess = () => {
         });
       }
     } else {
-      setFeedback('❌');
+      setDisablePads(true);
+      setTimeout(() => {
+        setDisablePads(false);
+        setFeedback(null);
+        setOldFactor(null);
+      }, 200);
     }
-    setTimeout(() => setFeedback(null), 1000);
   };
+
+  const togglePause = () => setIsPaused(!isPaused);
 
   const renderNumberPad = (setNumber, selectedNumber, isLeftPad) => (
     numbers.map((row, rowIndex) => (
@@ -85,11 +110,14 @@ const HiveAssess = () => {
         {row.map((num) => (
           <button
             key={num}
-            className={`number-button ${selectedNumber === num ? 'selected' : ''}`}
+            className={`number-button ${selectedNumber === num ? 'selected' : ''} ${
+              disablePads ? 'disabled' : ''
+            }`}
             onClick={() => {
               setNumber(num);
               checkAnswer(isLeftPad ? num : firstNumber, isLeftPad ? secondNumber : num);
             }}
+            disabled={disablePads}
           >
             {num}
           </button>
@@ -106,11 +134,21 @@ const HiveAssess = () => {
 
   const getAssessmentSummary = () => {
     const accuracy = attempts > 0 ? ((score / attempts) * 100).toFixed(1) : 0;
-    return `Final Score: ${score}\nAttempts: ${attempts}\nAccuracy: ${accuracy}%`;
+    return `Final Score: ${score}\nHigh Score: ${highScore}\nAttempts: ${attempts}\nAccuracy: ${accuracy}%`;
   };
+
+  const ProgressBar = ({ current, max }) => (
+    <div className="progress-bar">
+      <div
+        className="progress-fill"
+        style={{ width: `${(current / max) * 100}%` }}
+      />
+    </div>
+  );
 
   return (
     <div className="hive-assess">
+      <img src="/logo.png" alt="Number Hive Logo" className="logo" />
       <h1>Hive Assess</h1>
       {showSetup ? (
         <div className="setup">
@@ -142,29 +180,61 @@ const HiveAssess = () => {
             </div>
           </div>
           <div className="mode-toggle">
-            <span>Mode:</span>
-            <input
-              type="checkbox"
-              checked={isTimedMode}
-              onChange={() => setIsTimedMode(!isTimedMode)}
-            />
-            <span>{isTimedMode ? 'Timed (1 min)' : '25 Questions'}</span>
+            <label>
+              <input
+                type="radio"
+                name="mode"
+                checked={isTimedMode}
+                onChange={() => setIsTimedMode(true)}
+              />
+              Timed (1 min)
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="mode"
+                checked={!isTimedMode}
+                onChange={() => setIsTimedMode(false)}
+              />
+              25 Questions
+            </label>
           </div>
           <button onClick={startGame}>Start Assessment</button>
         </div>
       ) : gameActive ? (
         <>
+          <p className="subheading">Make the product below by changing one of the factors on the number pads.</p>
           <div className="feedback-row">
             <span className="product">{product ?? '?'}</span>
-            <span className="feedback">{feedback}</span>
+            {feedback && (
+              <span className={`feedback ${feedback}`}>
+                {feedback === 'correct' ? '✓' : '✗'} {oldFactor}
+              </span>
+            )}
           </div>
           <div className="number-pad-row">
-            <div>{renderNumberPad(setFirstNumber, firstNumber, true)}</div>
+            <div className="number-pad">{renderNumberPad(setFirstNumber, firstNumber, true)}</div>
             <span className="multiply">×</span>
-            <div>{renderNumberPad(setSecondNumber, secondNumber, false)}</div>
+            <div className="number-pad">{renderNumberPad(setSecondNumber, secondNumber, false)}</div>
           </div>
-          <p>Score: {score}</p>
-          <p>{isTimedMode ? `Time Left: ${timeLeft}s` : `Questions Left: ${questionsLeft}`}</p>
+          <div className="stats">
+            <p>Score: {score}</p>
+            <p>High Score: {highScore}</p>
+            {isTimedMode ? (
+              <>
+                <p>Time Left: {timeLeft}s</p>
+                <ProgressBar current={timeLeft} max={60} />
+              </>
+            ) : (
+              <>
+                <p>Questions Left: {questionsLeft}</p>
+                <ProgressBar current={25 - questionsLeft} max={25} />
+              </>
+            )}
+          </div>
+          <button onClick={togglePause} className="pause-button">
+            {isPaused ? 'Resume' : 'Pause'}
+          </button>
         </>
       ) : (
         <>
