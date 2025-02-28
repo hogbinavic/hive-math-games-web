@@ -1,25 +1,32 @@
-import logo from './logo.svg';
+import React, { useState } from 'react';
+import HiveAssess from './HiveAssess';
+import HiveRisk from './HiveRisk';
 import './App.css';
 
-function App() {
+const App = () => {
+  const [activeTab, setActiveTab] = useState('assess');
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+    <div className="app">
+      <nav className="tabs">
+        <button
+          className={activeTab === 'assess' ? 'active' : ''}
+          onClick={() => setActiveTab('assess')}
         >
-          Learn React
-        </a>
-      </header>
+          Hive Assess
+        </button>
+        <button
+          className={activeTab === 'risk' ? 'active' : ''}
+          onClick={() => setActiveTab('risk')}
+        >
+          Hive Risk
+        </button>
+      </nav>
+      <div className="content">
+        {activeTab === 'assess' ? <HiveAssess /> : <HiveRisk />}
+      </div>
     </div>
   );
-}
+};
 
 export default App;

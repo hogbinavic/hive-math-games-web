@@ -1,0 +1,102 @@
+.hive-assess {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+    font-family: Arial, sans-serif;
+  }
+  
+  .setup, .feedback-row, .number-pad-row {
+    margin: 20px 0;
+  }
+  
+  .factor-container {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .factor-column {
+    flex: 1;
+  }
+  
+  .factor-row {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+  }
+  
+  .factor-row input {
+    margin-right: 10px;
+  }
+  
+  .mode-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0;
+  }
+  
+  .mode-toggle span {
+    margin: 0 10px;
+  }
+  
+  .number-row {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .number-button {
+    margin: 5px;
+    padding: 10px;
+    width: 45px;
+    height: 45px;
+    background-color: lightblue;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  
+  .number-button.selected {
+    background-color: yellow;
+  }
+  
+  .product {
+    font-size: 40px;
+    font-weight: bold;
+    color: #f26d24;
+  }
+  
+  .feedback {
+    font-size: 40px;
+    margin-left: 10px;
+  }
+  
+  .multiply {
+    font-size: 30px;
+    margin: 0 10px;
+  }
+  
+  .game-over {
+    font-size: 24px;
+    white-space: pre;
+  }
+  
+  @media (max-width: 480px) {
+    .hive-assess {
+      padding: 10px;
+    }
+  
+    .number-button {
+      width: 40px;
+      height: 40px;
+      font-size: 16px;
+    }
+  
+    .product, .feedback {
+      font-size: 32px;
+    }
+  
+    .multiply {
+      font-size: 24px;
+    }
+  }
