@@ -37,6 +37,11 @@ const HiveAssess = () => {
   }, [gameActive, timeLeft, isTimedMode, isPaused]);
 
   const startGame = () => {
+    const selectedCount = selectedFactors.filter(Boolean).length;
+    if (selectedCount < 6) {
+      alert('Please select at least 6 factors to start the game.');
+      return;
+    }
     setShowSetup(false);
     setFirstNumber(1);
     setSecondNumber(1);
@@ -152,7 +157,7 @@ const HiveAssess = () => {
       <h1>Hive Assess</h1>
       {showSetup ? (
         <div className="setup">
-          <h2>Select Factors to Practice:</h2>
+          <h2>Select Factors to Practice (minimum 6):</h2>
           <div className="factor-container">
             <div className="factor-column">
               {Array.from({ length: 6 }, (_, i) => (
@@ -229,12 +234,12 @@ const HiveAssess = () => {
               <>
                 <p>Questions Left: {questionsLeft}</p>
                 <ProgressBar current={25 - questionsLeft} max={25} />
+                <button onClick={togglePause} className="pause-button">
+                  {isPaused ? 'Resume' : 'Pause'}
+                </button>
               </>
             )}
           </div>
-          <button onClick={togglePause} className="pause-button">
-            {isPaused ? 'Resume' : 'Pause'}
-          </button>
         </>
       ) : (
         <>
