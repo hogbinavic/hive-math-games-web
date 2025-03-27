@@ -98,7 +98,6 @@ const HiveAssess = () => {
       const leftVar = typeof left === 'string' && left.includes('𝓍') ? 1 : 0;
       const rightVar = typeof right === 'string' && right.includes('𝓍') ? 1 : 0;
       const changeLeft = Math.random() < 0.5;
-      const fixedFactor = changeLeft ? right : left;
       const fixedCoef = changeLeft ? rightCoef : leftCoef;
       const fixedVar = changeLeft ? rightVar : leftVar;
 
